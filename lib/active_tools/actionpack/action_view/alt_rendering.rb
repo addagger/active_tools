@@ -1,10 +1,10 @@
 module ActiveTools
-	module ActionPack
-		module ActionView
-			module AltRendering
-				
-				
-			end
-		end
-	end
+  module ActionPack
+    module ActionView
+      module AltRendering
+        
+        
+      end
+    end
+  end
 end
