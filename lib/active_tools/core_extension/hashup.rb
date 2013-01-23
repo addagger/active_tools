@@ -2,7 +2,7 @@ module ActiveTools
   module CoreExtension
     
     module Hashup
-      module Array
+      module ArrayExtension
         # Return a nested Hash object from Array's elements sequence, where elements used as names of +hash+ keys.
         # The last element of array would be the last nested value.
         #
@@ -23,6 +23,7 @@ module ActiveTools
           end
         end
       end
+      ::Array.send(:include, ArrayExtension)
     end
   end
 end

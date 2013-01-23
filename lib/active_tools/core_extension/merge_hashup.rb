@@ -4,7 +4,7 @@ module ActiveTools
   module CoreExtension
     
     module MergeHashup
-      module Hash
+      module HashExtension
         # Merge hashup sequence.
         #
         # === Example:
@@ -23,6 +23,7 @@ module ActiveTools
         end
         
       end
+      ::Hash.send(:include, HashExtension)
     end
   end
 end

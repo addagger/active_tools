@@ -4,7 +4,7 @@ module ActiveTools
     module DeepCopy
       # Return the 'deep' brand new copy of Hash, Array or Set. All nested hashes/arrays/sets rebuilded at the same way.
       
-      module Hash
+      module HashExtension
         def deep_copy(&block)
           self.class.new.tap do |new_hash|
             each do |k, v|
@@ -18,7 +18,7 @@ module ActiveTools
         end
       end
 
-      module Array
+      module ArrayExtension
         def deep_copy(&block)
           self.class.new.tap do |new_array|
             each do |v|
@@ -32,7 +32,7 @@ module ActiveTools
         end
       end
 
-      module Set
+      module SetExtension
         def deep_copy(&block)
           self.class.new.tap do |new_set|
             each do |v|
@@ -45,6 +45,10 @@ module ActiveTools
           end
         end
       end
+      
+      ::Hash.send(:include, HashExtension)
+      ::Array.send(:include, ArrayExtension)
+      ::Set.send(:include, SetExtension)
       
     end
   end

@@ -3,7 +3,7 @@ module ActiveTools
     
     module DeepMerge
       
-      module Hash
+      module HashExtension
         # Return the merged Hash with another +hash+, where the possible child hashes are also merged.
         #
         # === Example:
@@ -29,6 +29,8 @@ module ActiveTools
           replace(deep_merge(other_hash))
         end
       end
+      
+      ::Hash.send(:include, HashExtension)
       
     end
   end
