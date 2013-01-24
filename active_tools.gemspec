@@ -9,8 +9,8 @@ Gem::Specification.new do |gem|
   gem.authors       = ["Valery Kvon"]
   gem.email         = ["addagger@gmail.com"]
   gem.homepage      = %q{http://vkvon.ru/projects/active_tools}
-  gem.description   = %q{Missing tools for Rails developers [under development]}
-  gem.summary       = %q{ActionDispatch, ActiveRecord, ActiveSupport and ActionView extendings}
+  gem.description   = %q{Missing tools for Rails developers}
+  gem.summary       = %q{ActionDispatch, ActionController, ActiveModel, ActiveRecord, ActiveSupport, ActionView and core extensions}
 
   gem.rubyforge_project = "active_tools"
 
