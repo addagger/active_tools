@@ -11,6 +11,7 @@ module ActiveTools
 
           def merge(hash = {})
             type_valid(hash).each {|key, value| self[key] = value}
+            self
           end
 
           def to_s

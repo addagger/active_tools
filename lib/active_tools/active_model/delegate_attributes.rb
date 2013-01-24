@@ -17,7 +17,7 @@ module ActiveTools
         def delegate_attributes(*args)
           options = args.extract_options!
           errors_option = options.delete(:errors)
-  				writer_option = options.delete(:writer)
+          writer_option = options.delete(:writer)
 
           writer_regexp = /=\z/
           readers = args.select {|a| a.to_s !=~ writer_regexp}
