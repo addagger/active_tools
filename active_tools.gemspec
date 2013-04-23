@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
 
   gem.rubyforge_project = "active_tools"
 
-  gem.add_development_dependency "rails"
+  gem.add_dependency "rails"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

@@ -52,10 +52,13 @@ module ActiveTools
       
       
     end
+
+	  ::ActiveModel::Validations.send(:include, ActiveModel::DelegateAttributes)    
+
   end
   
   module OnLoadActiveRecord
-    ::ActiveModel::Validations.send(:include, ActiveModel::DelegateAttributes)    
+    #::ActiveRecord::Base.send(:include, ActiveModel::DelegateAttributes)
   end
   
 end

@@ -16,6 +16,7 @@ module ActiveTools
     require 'active_tools/actionpack'
     require 'active_tools/activesupport'
     require 'active_tools/activemodel'
+    require 'active_tools/activerecord'
     require 'active_tools/misc'
   end
 end
