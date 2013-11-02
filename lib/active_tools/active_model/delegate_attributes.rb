@@ -2,7 +2,7 @@ module ActiveTools
   module ActiveModel
     module DelegateAttributes
       extend ::ActiveSupport::Concern
-      
+
       included do
         class FakeErrors < ::ActiveModel::Errors
           private
@@ -10,14 +10,16 @@ module ActiveTools
             message ||= :invalid
           end
         end
-        
+
       end
-      
+
       module ClassMethods
         def delegate_attributes(*args)
           options = args.extract_options!
           errors_option = options.delete(:errors)
           writer_option = options.delete(:writer)
+          prefix_option = options[:prefix]
+          error_prefix = prefix_option ? "#{prefix_option}_" : ""
 
           writer_regexp = /=\z/
           readers = args.select {|a| a.to_s !=~ writer_regexp}
@@ -28,7 +30,7 @@ module ActiveTools
 
           class_eval do
             delegate *(readers + writers), options.dup
-          end          
+          end
 
           unless errors_option == false
             class_eval <<-EOV
@@ -39,7 +41,7 @@ module ActiveTools
                   object.errors.messages.each do |attribute, suberrors|
                     if attribute.to_s.in? %w{#{readers.join(" ")}}
                       suberrors.each do |suberror|
-                        errors.add(attribute, suberror)
+                        errors.add("#{error_prefix}" + attribute.to_s, suberror)
                       end
                     end
                   end
@@ -49,16 +51,16 @@ module ActiveTools
           end
         end
       end
-      
-      
+
+
     end
 
-	  ::ActiveModel::Validations.send(:include, ActiveModel::DelegateAttributes)    
+	  ::ActiveModel::Validations.send(:include, ActiveModel::DelegateAttributes)
 
   end
-  
+
   module OnLoadActiveRecord
     #::ActiveRecord::Base.send(:include, ActiveModel::DelegateAttributes)
   end
-  
+
 end
