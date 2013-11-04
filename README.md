@@ -1,3 +1,46 @@
+DOCS ARE UNDER CONSTRUCTION
+
+For now, the most usable feature of active tools is 'custom counters' - my implementation of <t>counter through</t> solution
+    Look! Typical data structure
+
+    class Country # has 'products_count' column
+      ...
+    end
+
+    class MadeIn # has 'products_count' column
+      belongs_to :country
+      
+      custom_counter_cache_for :country => {:made_ins_count => 1, :products_count => :products_count}
+      
+      # So, when MadeIn created/deleted, Country's 'made_ins_count' incremented/decremented by 1 and 'products_count' by MadeIn's 'products_count' value
+      ...
+    end
+
+    class Category # has 'products_count' column
+      acts_as_nested_set # has parent and children (!)
+
+      custom_counter_cache_for "parent*" => {:children_count => 1, :products_count => :products_count}
+
+      # So, when Category created/deleted, parent's 'children_count' incremented/decremented by 1 and 'products_count' by Category's 'products_count' value
+
+    end
+
+    class Brand # has 'products_count' column
+      ...
+    end
+
+    class Product < ActiveRecord::Base
+      belongs_to :category
+      belongs_to :brand
+      belongs_to :made_in
+      
+      custom_counter_cache_for :made_in => {:products_count => 1, :country => {:products_count => 1}}, :category => {:products_count => 1, "parent*" => {:products_count => 1}}, :brand => {:products_count => 1}
+  
+      # You can use nested options... it is very very useful :)
+  
+    end
+
+
 # ActiveTools
 
 TODO: Write a gem description
