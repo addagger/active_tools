@@ -1,7 +1,8 @@
-DOCS ARE UNDER CONSTRUCTION
+# DOCS ARE UNDER CONSTRUCTION
 
-For now, the most usable feature of active tools is 'custom counters' - my implementation of <t>counter through</t> solution
-    Look! Typical data structure
+## For now, the most usable feature of active tools is 'custom counters' - my implementation of <t>counter through</t> solution.
+
+### Look here! Typical data structure
 
     class Country # has 'products_count' column
       ...
