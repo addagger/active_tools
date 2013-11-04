@@ -7,8 +7,7 @@
     class Country # has 'products_count' column
       ...
     end
-
-
+ 
     class MadeIn # has 'products_count' column
       belongs_to :country
       
@@ -17,8 +16,7 @@
       # So, when MadeIn created/deleted, Country's 'made_ins_count' incremented/decremented by 1 and 'products_count' by MadeIn's 'products_count' value
       ...
     end
-
-
+ 
     class Category # has 'products_count' column
       acts_as_nested_set # has parent and children (!)
 
@@ -27,13 +25,11 @@
       # So, when Category created/deleted, parent's 'children_count' incremented/decremented by 1 and 'products_count' by Category's 'products_count' value
 
     end
-
-
+ 
     class Brand # has 'products_count' column
       ...
     end
-
-
+ 
     class Product < ActiveRecord::Base
       belongs_to :category
       belongs_to :brand
@@ -44,7 +40,7 @@
       # You can use nested options... it is very very useful :)
   
     end
-
+ 
 
 # ActiveTools
 
