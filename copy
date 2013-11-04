@@ -1,0 +1,2 @@
+#/bin/sh
+rm -rfv /Volumes/library/"All for Ruby"/"Rails Projects"/active_tools && cp -Rv ~/active_tools /Volumes/library/"All for Ruby"/"Rails Projects"/
