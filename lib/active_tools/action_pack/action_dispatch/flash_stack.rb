@@ -2,6 +2,8 @@ module ActiveTools
   module ActionPack
     module ActionDispatch
       module FlashStack
+        # Doesn't work with Rails 4.0>
+  
         extend ActiveSupport::Concern
 
         included do

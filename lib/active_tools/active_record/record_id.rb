@@ -1,5 +1,5 @@
 module ActiveTools
-  module ActiveModel
+  module ActiveRecord
     module RecordId
       extend ::ActiveSupport::Concern
       
@@ -10,18 +10,18 @@ module ActiveTools
       end
       
       def record_id
-        "#{self.class.model_name.singular}_#{try(:id)||uniq_id}"
+        "#{self.class.model_name.singular}_#{try(self.class.primary_key)||uniq_id}"
       end
 
       def uniq_id
-        Base64.urlsafe_encode64(Time.now._dump)
+        Base64.urlsafe_encode64(Time.now.send(:_dump))
       end
       
     end
   end
   
   module OnLoadActiveRecord
-    include ActiveModel::RecordId
+    include ActiveRecord::RecordId
   end
   
 end
