@@ -14,7 +14,7 @@ module ActiveTools
           readers = args.select {|a| a.to_s !=~ writer_regexp}
           writers = args.select {|a| a.to_s =~ writer_regexp}
           if writer_option == true
-            writers += readers.map {|a| "#{a}="}
+            writers |= readers.map {|a| "#{a}="}
           end
 
           class_eval do

@@ -4,15 +4,6 @@ module ActiveTools
     module ValidWith
       extend ::ActiveSupport::Concern
       
-      included do
-        class FakeErrors < ::ActiveModel::Errors
-          private
-          def normalize_message(attribute, message, options)
-            message ||= :invalid
-          end
-        end
-      end
-      
       module ClassMethods
         def valid_with(*args)
           options = args.extract_options!
