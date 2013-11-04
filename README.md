@@ -8,6 +8,7 @@
       ...
     end
 
+
     class MadeIn # has 'products_count' column
       belongs_to :country
       
@@ -16,6 +17,7 @@
       # So, when MadeIn created/deleted, Country's 'made_ins_count' incremented/decremented by 1 and 'products_count' by MadeIn's 'products_count' value
       ...
     end
+
 
     class Category # has 'products_count' column
       acts_as_nested_set # has parent and children (!)
@@ -26,9 +28,11 @@
 
     end
 
+
     class Brand # has 'products_count' column
       ...
     end
+
 
     class Product < ActiveRecord::Base
       belongs_to :category
