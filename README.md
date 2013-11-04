@@ -1,13 +1,17 @@
 # DOCS ARE UNDER CONSTRUCTION
 
-## For now, the most usable feature of active tools is 'custom counters' - my implementation of <t>counter through</t> solution.
+### For now, the most usable feature of active tools is 'custom counters' - my implementation of <t>counter through</t> solution
 
-### Look here! Typical data structure
+#### Look here! Typical data structure
+
+Country
 
     class Country # has 'products_count' column
       ...
     end
- 
+
+Made in ...
+
     class MadeIn # has 'products_count' column
       belongs_to :country
       
@@ -16,7 +20,9 @@
       # So, when MadeIn created/deleted, Country's 'made_ins_count' incremented/decremented by 1 and 'products_count' by MadeIn's 'products_count' value
       ...
     end
- 
+
+Category (has parent)
+
     class Category # has 'products_count' column
       acts_as_nested_set # has parent and children (!)
 
@@ -25,11 +31,15 @@
       # So, when Category created/deleted, parent's 'children_count' incremented/decremented by 1 and 'products_count' by Category's 'products_count' value
 
     end
- 
+
+Brand name
+
     class Brand # has 'products_count' column
       ...
     end
- 
+
+Product itself
+
     class Product < ActiveRecord::Base
       belongs_to :category
       belongs_to :brand
@@ -40,7 +50,8 @@
       # You can use nested options... it is very very useful :)
   
     end
- 
+
+Thanks
 
 # ActiveTools
 
