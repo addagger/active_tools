@@ -136,7 +136,7 @@ module ActiveTools
         end
         
         def attributes(object, *attrs)
-          Hash[attrs.map {|a| [a, object.send(a)]}]
+          Hash[attrs.map {|a| [a, object.send(a)]}] #Hash[attrs.map {|a| [a, object.try(a)]}]
         end
 
         def create_template!
@@ -145,15 +145,15 @@ module ActiveTools
           end
         end
 
-        def restore_backup!
-          if @backup
-            if @backup.marked_for_destruction?
-              @backup.instance_variable_set(:@marked_for_destruction, false)
-            end
-            self.target = @backup
-            @backup = nil
-          end
-        end
+        # def restore_backup!
+        #   if @backup
+        #     if @backup.marked_for_destruction?
+        #       @backup.instance_variable_set(:@marked_for_destruction, false)
+        #     end
+        #     self.target = @backup
+        #     @backup = nil
+        #   end
+        # end
         
         def store_backup!
           if target.try(:persisted?)
