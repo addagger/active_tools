@@ -55,6 +55,7 @@ module ActiveTools
         def try_update
           if updateable_backup?
             begin
+              puts "ASDFASDFASDF #{@template}"
               @backup.update(attributes(@template, *@remote_attributes))   
             rescue ::ActiveRecord::StaleObjectError
               @backup.reload
