@@ -27,7 +27,7 @@ module ActiveTools
           foreign_key  = reflection.foreign_key
           if (@_after_create_custom_counter_called ||= false)
             @_after_create_custom_counter_called = false
-          elsif send(:attribute_changed?, foreign_key) && !new_record? && (Rails.version >= "4.1.0" ? association(assoc_name).constructable? : defined?(reflection.klass.to_s.camelize))
+          elsif send(:attribute_changed?, foreign_key) && !new_record? && defined?(reflection.klass.to_s.camelize)
             model           = reflection.klass
             foreign_key_was = attribute_was foreign_key
             foreign_key     = attribute foreign_key

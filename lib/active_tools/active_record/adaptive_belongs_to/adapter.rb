@@ -12,6 +12,7 @@ module ActiveTools
           @foreign_key = reflection.foreign_key
           @remote_attributes = @options[:remote_attributes]
           @init_proc = @options[:init_proc]
+          @nullify_if = @options[:nullify_if]
           @update_if = @options[:update_if]
           @destroy_if = @options[:destroy_if]
           @uniq_by = Array(@options[:uniq_by]).map(&:to_s)
@@ -34,12 +35,19 @@ module ActiveTools
             end
           end
         end
+        
+        def try_nullify
+          if nullify?
+            store_backup!
+            self.target = nil
+          end
+        end
 
-        def try_commit
+        def try_commit          
           try_commit_existed || try_update
         end
 
-        def try_destroy
+        def try_destroy          
           try_destroy_backup
           try_destroy_target
         end
@@ -47,7 +55,7 @@ module ActiveTools
         def try_update
           if updateable_backup?
             begin
-              @backup.update(attributes(@template, *@remote_attributes))
+              @backup.update(attributes(@template, *@remote_attributes))   
             rescue ::ActiveRecord::StaleObjectError
               @backup.reload
               try_update
@@ -57,9 +65,11 @@ module ActiveTools
         end
 
         def try_commit_existed
-          if @template.present? && @uniq_by.any? && existed = detect_existed
+          if @template.present? && @uniq_by.any? && (existed = detect_existed)
             self.target = existed
-            try_destroy_updateable_backup
+            if updateable_backup?
+              @backup.mark_for_destruction
+            end
             true
           end 
         end
@@ -75,18 +85,7 @@ module ActiveTools
           end
         end
 
-        def try_destroy_updateable_backup
-          if updateable_backup?
-            begin
-              @backup.destroy
-            rescue ::ActiveRecord::StaleObjectError
-              @backup.reload
-              try_destroy_updateable_backup
-            end
-          end
-        end
-
-        def try_destroy_target(force = false)
+        def try_destroy_target
           if destroyable_target?
             begin
               target.destroy
@@ -111,8 +110,8 @@ module ActiveTools
             relation_options_call = "#{attribute}_relation_options"
             if klass.respond_to?(relation_options_call)
               values = @template.send(relation_options_call)
-              outer_values.merge!(values[:outer_values])
-              where_values.merge!(values[:where_values])
+              outer_values.deep_merge!(values[:outer_values])
+              where_values.deep_merge!(values[:where_values])
             else
               where_values[attribute] = @template.send(attribute)
             end
@@ -120,16 +119,20 @@ module ActiveTools
           klass.includes(outer_values).where(where_values).limit(1).first
         end
 
+        def nullify?
+          target.present? && @nullify_if.try(:call, (target.persisted? ? target.reload : target), owner)
+        end
+
         def updateable_backup?
-          @backup.present? && @update_if.try(:call, @backup)
+          @backup.try(:persisted?) && @update_if.try(:call, @backup.reload, owner)
         end
 
         def destroyable_backup?
-          @backup.present? && !@backup.destroyed? && @destroy_if.try(:call, @backup)
+          @backup.try(:persisted?) && (!@backup.destroyed?||@backup.marked_for_destruction?) && @destroy_if.try(:call, @backup.reload, owner)
         end
 
         def destroyable_target?
-          target.try(:persisted?) && !target.destroyed? && @destroy_if.try(:call, target)
+          target.try(:persisted?) && (!target.destroyed?||target.marked_for_destruction?) && @destroy_if.try(:call, target.reload, owner)
         end
         
         def attributes(object, *attrs)
@@ -144,6 +147,9 @@ module ActiveTools
 
         def restore_backup!
           if @backup
+            if @backup.marked_for_destruction?
+              @backup.instance_variable_set(:@marked_for_destruction, false)
+            end
             self.target = @backup
             @backup = nil
           end
@@ -165,7 +171,15 @@ module ActiveTools
 
         def target=(record)
           if owner.persisted?
-            association.send(:replace_keys, record)
+            if Rails.version >= "4.1.0"
+              if record
+                association.send(:replace_keys, record)
+              else
+                association.send(:remove_keys)
+              end
+            else
+              association.send(:replace_keys, record)
+            end
             association.set_inverse_instance(record)
             association.instance_variable_set(:@updated, true) if record != @backup
             association.target = record
@@ -184,7 +198,7 @@ module ActiveTools
             target.dup
           end
           @template.tap do |t|
-            @init_proc.try(:call, t)
+            @init_proc.try(:call, t, owner)
           end
         end 
       end

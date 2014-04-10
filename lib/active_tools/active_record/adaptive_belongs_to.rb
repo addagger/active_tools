@@ -1,3 +1,4 @@
+require 'active_tools/core_extension/deep_merge'
 require 'active_tools/active_record/adaptive_belongs_to/adapter'
 module ActiveTools
   module ActiveRecord
@@ -62,11 +63,15 @@ module ActiveTools
           self.send("#{config_name}=", options.merge(:remote_attributes => attr_map.keys))
           
           class_eval <<-EOV
-            after_validation do
+            before_validation do
+              #{adapter_name}.try_nullify
+            end
+          
+            before_save do
               #{adapter_name}.try_commit
             end
 
-            after_commit do
+            after_save do
               #{adapter_name}.try_destroy_backup
               #{adapter_name}.clear!
             end
@@ -86,7 +91,7 @@ module ActiveTools
               define_method local_attribute do
                 send(adapter_name).read(remote_attribute)
               end
-
+          
               define_method "#{local_attribute}=" do |value|
                 send(adapter_name).write(remote_attribute, value)
               end

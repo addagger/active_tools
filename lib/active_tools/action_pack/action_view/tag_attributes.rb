@@ -3,7 +3,6 @@ module ActiveTools
     module ActionView
       module TagAttributes
         class Collect
-          attr_reader :hash
           def initialize(hash = nil)
             @hash = HashWithIndifferentAccess.new {|h,k| h[k] = Array.new}
             merge(hash) if hash
@@ -28,6 +27,10 @@ module ActiveTools
 
           def stringify_values
             Hash[@hash.map {|k,v| [k, v.join(" ")]}]
+          end
+
+          def hash
+            @hash.symbolize_keys
           end
 
           private
