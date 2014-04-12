@@ -37,8 +37,6 @@ module ActiveTools
         end
         
         def try_nullify
-          warn "try_nullify"
-          
           if nullify?    
             store_backup!
             self.target = nil
@@ -55,10 +53,6 @@ module ActiveTools
         end
 
         def try_update
-          warn "try_update #{reflection.name} #{updateable_backup?.inspect} #{@template.inspect}
-          atr: #{updateable_backup? ? attributes(@template, *@remote_attributes) : nil} #{@backup.inspect} #{@backup.try(:reload).try(:inspect)}
-          #{@backup ? @backup.try(:persisted?) : "nobackup"} #{@backup ? @update_if.try(:call, @backup.reload, owner) : "nobackup"}"
-          
           if updateable_backup?
             begin
               @backup.update(attributes(@template, *@remote_attributes))   
@@ -71,8 +65,6 @@ module ActiveTools
         end
 
         def try_commit_existed
-          warn "try_commit_existed target=#{target}"
-          
           if @template.present? && @uniq_by.any? && (existed = detect_existed)
             self.target = existed
             if updateable_backup?
@@ -83,8 +75,6 @@ module ActiveTools
         end
 
         def try_destroy_backup
-          warn "try_destroy_backup"
-          
           if destroyable_backup?
             begin
               @backup.destroy
@@ -96,8 +86,6 @@ module ActiveTools
         end
 
         def try_destroy_target
-          warn "try_destroy_target"
-          
           if destroyable_target?
             begin
               target.destroy
@@ -148,7 +136,7 @@ module ActiveTools
         end
         
         def attributes(object, *attrs)
-          Hash[attrs.map {|a| [a, object.send(a)]}] #Hash[attrs.map {|a| [a, object.try(a)]}]
+          Hash[attrs.map {|a| [a, object.send(a)]}]
         end
 
         def create_template!
