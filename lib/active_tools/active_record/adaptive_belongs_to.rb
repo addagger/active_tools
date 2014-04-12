@@ -51,8 +51,8 @@ module ActiveTools
           unless reflection = reflections[assoc_name]
             raise(ArgumentError, ":#{assoc_name} method doesn't look like an association accessor!")
           end
-          adapter_name = "#{assoc_name}_"
-          config_name = "#{assoc_name}_adapter_options"
+          adapter_name = "#{assoc_name}_adaptive"
+          config_name = "#{assoc_name}_adaptive_options"
           
           raise(TypeError, "Option :attributes must be a Hash. #{options[:attributes].class} passed!") unless options[:attributes].is_a?(Hash)
           attr_map = options.delete(:attributes).with_indifferent_access
@@ -67,7 +67,7 @@ module ActiveTools
               #{adapter_name}.try_nullify
             end
           
-            before_save do
+            #{Rails.version >= "4.1.0" ? "after_validation" : "before_save"} do
               #{adapter_name}.try_commit
             end
 
@@ -97,22 +97,7 @@ module ActiveTools
               end
             end
           end
-
-          # attr_map.each do |remote_attribute, local_attribute|        
-          #   class_eval <<-EOV
-          #     def #{local_attribute}_adaptive
-          #       [{:#{assoc_name} => {}}, {:#{reflections[assoc_name].table_name} => {:#{remote_attribute} => #{local_attribute}}}]
-          #     end
-          # 
-          #     def #{local_attribute}
-          #       #{adapter_name}.read(:#{remote_attribute})
-          #     end
-          # 
-          #     def #{local_attribute}=(value)
-          #       #{adapter_name}.write(:#{remote_attribute}, value)
-          #     end           
-          #   EOV
-          # end
+          
         end    
       end
     end

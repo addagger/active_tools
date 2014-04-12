@@ -37,7 +37,9 @@ module ActiveTools
         end
         
         def try_nullify
-          if nullify?
+          warn "try_nullify"
+          
+          if nullify?    
             store_backup!
             self.target = nil
           end
@@ -53,6 +55,10 @@ module ActiveTools
         end
 
         def try_update
+          warn "try_update #{reflection.name} #{updateable_backup?.inspect} #{@template.inspect}
+          atr: #{updateable_backup? ? attributes(@template, *@remote_attributes) : nil} #{@backup.inspect} #{@backup.try(:reload).try(:inspect)}
+          #{@backup ? @backup.try(:persisted?) : "nobackup"} #{@backup ? @update_if.try(:call, @backup.reload, owner) : "nobackup"}"
+          
           if updateable_backup?
             begin
               @backup.update(attributes(@template, *@remote_attributes))   
@@ -65,6 +71,8 @@ module ActiveTools
         end
 
         def try_commit_existed
+          warn "try_commit_existed target=#{target}"
+          
           if @template.present? && @uniq_by.any? && (existed = detect_existed)
             self.target = existed
             if updateable_backup?
@@ -75,6 +83,8 @@ module ActiveTools
         end
 
         def try_destroy_backup
+          warn "try_destroy_backup"
+          
           if destroyable_backup?
             begin
               @backup.destroy
@@ -86,6 +96,8 @@ module ActiveTools
         end
 
         def try_destroy_target
+          warn "try_destroy_target"
+          
           if destroyable_target?
             begin
               target.destroy
@@ -145,15 +157,15 @@ module ActiveTools
           end
         end
 
-        # def restore_backup!
-        #   if @backup
-        #     if @backup.marked_for_destruction?
-        #       @backup.instance_variable_set(:@marked_for_destruction, false)
-        #     end
-        #     self.target = @backup
-        #     @backup = nil
-        #   end
-        # end
+        def restore_backup!
+          if @backup
+            if @backup.marked_for_destruction?
+              @backup.instance_variable_set(:@marked_for_destruction, false)
+            end
+            self.target = @backup
+            @backup = nil
+          end
+        end
         
         def store_backup!
           if target.try(:persisted?)
