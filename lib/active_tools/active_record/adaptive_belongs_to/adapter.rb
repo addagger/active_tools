@@ -43,7 +43,7 @@ module ActiveTools
           end
         end
 
-        def try_commit          
+        def try_commit
           try_commit_existed || try_update
         end
 
@@ -52,10 +52,14 @@ module ActiveTools
           try_destroy_target
         end
 
+        def welcome
+          attributes(@template, *@remote_attributes)
+        end
+
         def try_update
           if updateable_backup?
             begin
-              @backup.update(attributes(@template, *@remote_attributes))   
+              @backup.update(attributes(@template, *@remote_attributes))
             rescue ::ActiveRecord::StaleObjectError
               @backup.reload
               try_update

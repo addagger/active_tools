@@ -67,7 +67,7 @@ module ActiveTools
               #{adapter_name}.try_nullify
             end
           
-            #{Rails.version >= "4.1.0" ? "after_validation" : "before_save"} do
+            #{Rails.version >= "4.1.0" ? "before_validation" : "before_save"} do
               #{adapter_name}.try_commit
             end
 
@@ -81,7 +81,8 @@ module ActiveTools
             end
           
             def #{adapter_name}
-              @#{adapter_name} ||= ActiveTools::ActiveRecord::AdaptiveBelongsTo::Adapter.new(association(:#{assoc_name}), #{config_name})
+              puts "dfasfsfsfs"
+              ActiveTools::ActiveRecord::AdaptiveBelongsTo::Adapter.new(association(:#{assoc_name}), #{config_name})
             end
           EOV
 
