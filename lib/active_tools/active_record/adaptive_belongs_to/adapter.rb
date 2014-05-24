@@ -2,12 +2,13 @@ module ActiveTools
   module ActiveRecord
     module AdaptiveBelongsTo
       class Adapter
-        attr_reader :association, :options
+        attr_reader :owner, :assoc_name, :options
 
-        delegate :target, :target_id, :klass, :owner, :reflection, :to => :association
+        delegate :target, :target_id, :klass, :reflection, :to => :association
 
-        def initialize(association, options = {})
-          @association = association
+        def initialize(owner, assoc_name, options = {})
+          @owner = owner
+          @assoc_name = assoc_name
           @options = options.with_indifferent_access
           @foreign_key = reflection.foreign_key
           @remote_attributes = @options[:remote_attributes]
@@ -16,7 +17,11 @@ module ActiveTools
           @update_if = @options[:update_if]
           @destroy_if = @options[:destroy_if]
           @uniq_by = Array(@options[:uniq_by]).map(&:to_s)
-          @association.load_target
+          association.load_target
+        end
+        
+        def association
+          owner.association(assoc_name)
         end
 
         def read(name)
@@ -34,10 +39,6 @@ module ActiveTools
               restore_backup!
             end
           end
-        end
-        
-        def replace_association(association)
-          @association = association
         end
         
         def try_nullify

@@ -52,15 +52,15 @@ module ActiveTools
             raise(ArgumentError, ":#{assoc_name} method doesn't look like an association accessor!")
           end
           adapter_name = "#{assoc_name}_adaptive"
-          config_name = "#{assoc_name}_adaptive_options"
           
           raise(TypeError, "Option :attributes must be a Hash. #{options[:attributes].class} passed!") unless options[:attributes].is_a?(Hash)
           attr_map = options.delete(:attributes).with_indifferent_access
        
           valid_with assoc_name, :attributes => attr_map
         
-          class_attribute config_name
-          self.send("#{config_name}=", options.merge(:remote_attributes => attr_map.keys))
+          class_attribute :adaptive_options unless defined?(adaptive_options)
+          self.adaptive_options ||= {}
+          self.adaptive_options[assoc_name.to_sym] = options.merge(:remote_attributes => attr_map.keys)
           
           class_eval <<-EOV
             before_validation do
@@ -81,15 +81,7 @@ module ActiveTools
             end
           
             def #{adapter_name}
-              @#{adapter_name} ||= ActiveTools::ActiveRecord::AdaptiveBelongsTo::Adapter.new(association(:#{assoc_name}), #{config_name})
-            end
-            
-            def #{adapter_name}_replace_association!
-              @#{adapter_name}.try(:replace_association, association(:#{assoc_name}))
-            end
-            
-            def reload(*args)
-              super.tap {|r| r.#{adapter_name}_replace_association!}
+              @#{adapter_name} ||= ActiveTools::ActiveRecord::AdaptiveBelongsTo::Adapter.new(self, :#{assoc_name}, adaptive_options[:#{assoc_name}])
             end
           EOV
 
@@ -105,8 +97,19 @@ module ActiveTools
             end
           end
           
-        end    
+        end
       end
+      
+      # def reload(*args)
+      #   super.tap do |record|
+      #     adaptive_options.keys.each do |assoc_name|
+      #       puts assoc_name
+      #       adapter_name = "#{assoc_name}_adaptive"
+      #       eval("@#{adapter_name}.try(:replace_association, association(:#{assoc_name}))")
+      #     end
+      #   end
+      # end
+      
     end
   end
   
