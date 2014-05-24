@@ -36,6 +36,10 @@ module ActiveTools
           end
         end
         
+        def replace_association(association)
+          @association = association
+        end
+        
         def try_nullify
           if nullify?    
             store_backup!
@@ -52,14 +56,18 @@ module ActiveTools
           try_destroy_target
         end
 
-        def welcome
+        def template_attributes
           attributes(@template, *@remote_attributes)
+        end
+        
+        def target_attributes
+          attributes(target, *@remote_attributes)
         end
 
         def try_update
           if updateable_backup?
             begin
-              @backup.update(attributes(@template, *@remote_attributes))
+              @backup.update(template_attributes)
             rescue ::ActiveRecord::StaleObjectError
               @backup.reload
               try_update
@@ -140,7 +148,14 @@ module ActiveTools
         end
         
         def attributes(object, *attrs)
-          Hash[attrs.map {|a| [a, object.send(a)]}]
+          array = attrs.map do |a|
+            begin
+              [a, object.send(a)]
+            rescue NoMethodError
+              nil
+            end
+          end.compact
+          Hash[array]
         end
 
         def create_template!
@@ -195,7 +210,7 @@ module ActiveTools
         def template
           @template ||=
           if target.try(:persisted?)
-            klass.new(attributes(target, *@remote_attributes))
+            klass.new(target_attributes)
           elsif target.nil?
             klass.new
           elsif target.try(:new_record?)

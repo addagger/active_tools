@@ -81,8 +81,15 @@ module ActiveTools
             end
           
             def #{adapter_name}
-              puts "dfasfsfsfs"
-              ActiveTools::ActiveRecord::AdaptiveBelongsTo::Adapter.new(association(:#{assoc_name}), #{config_name})
+              @#{adapter_name} ||= ActiveTools::ActiveRecord::AdaptiveBelongsTo::Adapter.new(association(:#{assoc_name}), #{config_name})
+            end
+            
+            def #{adapter_name}_replace_association!
+              @#{adapter_name}.try(:replace_association, association(:#{assoc_name}))
+            end
+            
+            def reload(*args)
+              super.tap {|r| r.#{adapter_name}_replace_association!}
             end
           EOV
 
@@ -92,7 +99,6 @@ module ActiveTools
               define_method local_attribute do
                 send(adapter_name).read(remote_attribute)
               end
-          
               define_method "#{local_attribute}=" do |value|
                 send(adapter_name).write(remote_attribute, value)
               end
