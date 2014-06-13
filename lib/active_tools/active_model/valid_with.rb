@@ -20,22 +20,22 @@ module ActiveTools
           end
 
           if passed_attr_map.any?
-            class_eval <<-EOV
-              validate do
-                if object = #{object_name}
-                  #{"object.instance_variable_set(:@errors, ActiveTools::ActiveModel::ValidWith::FakeErrors.new(object))" if options[:fit] == true}
-                  if !object.valid?
-                    object.errors.messages.each do |attribute, suberrors|
-                      if local_attribute = self.#{attr_map_name}[attribute]
-                        suberrors.each do |suberror|
-                          errors.add(["#{prefix}", local_attribute].select(&:present?).join("_"), suberror)
-                        end
+            validate(*[options]) do
+              if object = send(object_name)
+                if options[:fit] == true
+                  object.instance_variable_set(:@errors, ActiveTools::ActiveModel::ValidWith::FakeErrors.new(object))
+                end
+                if !object.valid?
+                  object.errors.messages.each do |attribute, suberrors|
+                    if local_attribute = send(attr_map_name)[attribute]
+                      suberrors.each do |suberror|
+                        errors.add([prefix.to_s, local_attribute].select(&:present?).join("_"), suberror)
                       end
                     end
                   end
                 end
               end
-            EOV
+            end
           end
         end
       end
