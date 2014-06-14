@@ -29,8 +29,9 @@ module ActiveTools
             uniq_content_storage.append_content(content, Misc::DEFAULT_JS_FLOW_KEY)
             nil
           when Mime::HTML then
-            unless uniq_content_storage.remembered?(content, options[:volume])
-              flow = uniq_content_storage.remember(content, options[:volume])
+            volume = options.delete(:volume)
+            unless uniq_content_storage.remembered?(content, volume)
+              flow = uniq_content_storage.remember(content, volume)
               options[:javascript_tag] == false ? flow : javascript_tag(flow, options)
             end
           end
