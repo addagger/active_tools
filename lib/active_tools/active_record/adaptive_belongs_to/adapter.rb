@@ -72,6 +72,9 @@ module ActiveTools
             rescue ::ActiveRecord::StaleObjectError
               @backup.reload
               try_update
+            rescue ::ActiveRecord::StatementInvalid
+              @backup.reload
+              try_update
             end
             self.target = @backup
           end
@@ -94,6 +97,9 @@ module ActiveTools
             rescue ::ActiveRecord::StaleObjectError
               @backup.reload
               try_destroy_backup
+            rescue ::ActiveRecord::StatementInvalid
+              @backup.reload
+              try_destroy_backup
             end
           end
         end
@@ -103,6 +109,9 @@ module ActiveTools
             begin
               target.destroy
             rescue ::ActiveRecord::StaleObjectError
+              target.reload
+              try_destroy_target
+            rescue ::ActiveRecord::StatementInvalid
               target.reload
               try_destroy_target
             end
