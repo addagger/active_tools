@@ -4,7 +4,7 @@ module ActiveTools
       class Adapter
         attr_reader :owner, :assoc_name, :options
 
-        delegate :target, :target_id, :klass, :reflection, :to => :association
+        delegate :target, :target_id, :reflection, :to => :association
 
         def initialize(owner, assoc_name, options = {})
           @owner = owner
@@ -18,6 +18,10 @@ module ActiveTools
           @destroy_if = @options[:destroy_if]
           @uniq_by = Array(@options[:uniq_by]).map(&:to_s)
           association.load_target
+        end
+        
+        def klass
+          association.klass||reflection.class_name.constantize
         end
         
         def association

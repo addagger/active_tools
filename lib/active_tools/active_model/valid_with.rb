@@ -8,9 +8,8 @@ module ActiveTools
         def valid_with(*args)
           options = args.extract_options!
           object_name = args.first
-          passed_attr_map = options.delete(:attributes)
+          passed_attr_map = options.delete(:attributes)||{}
           prefix = options.delete(:prefix)
-          raise(TypeError, "Option :attributes must be a Hash. #{passed_attr_map.class} passed!") unless passed_attr_map.is_a?(Hash)
           attr_map_name = :"_valid_with_#{object_name}"
           unless respond_to?(attr_map_name)
             class_attribute attr_map_name 
@@ -19,19 +18,16 @@ module ActiveTools
             self.send(attr_map_name).merge!(passed_attr_map)
           end
 
-          if passed_attr_map.any?
-            validate(*[options]) do
-              if object = send(object_name)
-                if options[:fit] == true
-                  object.instance_variable_set(:@errors, ActiveTools::ActiveModel::ValidWith::FakeErrors.new(object))
-                end
-                if !object.valid?
-                  object.errors.messages.each do |attribute, suberrors|
-                    if local_attribute = send(attr_map_name)[attribute]
-                      suberrors.each do |suberror|
-                        errors.add([prefix.to_s, local_attribute].select(&:present?).join("_"), suberror)
-                      end
-                    end
+          validate(*[options]) do
+            if object = send(object_name)
+              if options[:fit] == true
+                object.instance_variable_set(:@errors, ActiveTools::ActiveModel::ValidWith::FakeErrors.new(object))
+              end
+              if !object.valid?
+                object.errors.messages.each do |attribute, suberrors|
+                  local_attribute = send(attr_map_name)[attribute]||attribute
+                  suberrors.each do |suberror|
+                    errors.add([prefix.to_s, local_attribute].select(&:present?).join("_"), suberror)
                   end
                 end
               end
