@@ -22,15 +22,20 @@ module ActiveTools
         end
 
         def custom_counter_cache_after_update(assoc_name, reflection, assoc_mapping)
-          foreign_key  = reflection.foreign_key
+          record_changed =
+          if reflection.polymorphic?
+            send(:attribute_changed?, reflection.foreign_type)||send(:attribute_changed?, reflection.foreign_key)
+          else
+            send(:attribute_changed?, reflection.foreign_key) && defined?(reflection.klass.to_s.camelize)
+          end
+          
           if (@_after_create_custom_counter_called ||= false)
             @_after_create_custom_counter_called = false
-          elsif !new_record? && ((send(:attribute_changed?, foreign_key) && defined?(reflection.klass.to_s.camelize))||
-                (reflection.polymorphic? && send(:attribute_changed?, reflection.foreign_type)))
-            model           = (attribute(reflection.foreign_type).try(:constantize) if reflection.polymorphic?)||reflection.klass
-            model_was       = (attribute_was(reflection.foreign_type).try(:constantize) if reflection.polymorphic?)||reflection.class
-            foreign_key_was = attribute_was(foreign_key)
-            foreign_key     = attribute(foreign_key)
+          elsif !new_record? && record_changed
+            model           = reflection.polymorphic? ? attribute(reflection.foreign_type).try(:constantize) : reflection.klass
+            model_was       = reflection.polymorphic? ? attribute_was(reflection.foreign_type).try(:constantize) : reflection.klass
+            foreign_key     = attribute(reflection.foreign_key)
+            foreign_key_was = attribute_was(reflection.foreign_key)
 
             if foreign_key && model.respond_to?(:increment_counter) && to_increment = model.find_by_id(foreign_key)
               ActiveRecord::CustomCounterCache.digger(self, to_increment, assoc_mapping) do |parent, cache_column, value|
