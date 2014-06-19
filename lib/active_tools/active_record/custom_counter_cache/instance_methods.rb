@@ -26,7 +26,7 @@ module ActiveTools
           if reflection.polymorphic?
             send(:attribute_changed?, reflection.foreign_type)||send(:attribute_changed?, reflection.foreign_key)
           else
-            send(:attribute_changed?, reflection.foreign_key) && defined?(reflection.klass.to_s.camelize)
+            send(:attribute_changed?, reflection.foreign_key)
           end
           
           if (@_after_create_custom_counter_called ||= false)
