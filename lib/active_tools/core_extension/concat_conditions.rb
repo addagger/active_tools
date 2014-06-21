@@ -12,6 +12,9 @@ module ActiveTools
           sql_clause = concat_array.present? ? concat_array.join(" #{operator} ") : nil
           [(round && concat_array.size > 1) ? "(#{sql_clause})" : sql_clause, *((self[1..-1]||[])+(conditions[1..-1]||[]))]
         end
+        def concat_as_condition_with!(*args)
+          replace(concat_as_condition_with(*args))
+        end
       end
       ::Array.send(:include, ArrayExtension)
     end
