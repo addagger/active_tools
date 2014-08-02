@@ -30,7 +30,7 @@ module ActiveTools
 
         def read(name)
           valid_attribute?(name)
-          target.send(name) if target
+          association.loaded? ? target.try(name) : association.reload.target.try(name)
         end
 
         def write(name, value)
