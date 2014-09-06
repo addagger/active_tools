@@ -32,8 +32,8 @@ module ActiveTools
           if (@_after_create_custom_counter_called ||= false)
             @_after_create_custom_counter_called = false
           elsif !new_record? && record_changed
-            model           = reflection.polymorphic? ? attribute(reflection.foreign_type).try(:constantize) : reflection.klass
-            model_was       = reflection.polymorphic? ? attribute_was(reflection.foreign_type).try(:constantize) : reflection.klass
+            model           = reflection.options[:polymorphic] ? attribute(reflection.foreign_type).try(:constantize) : reflection.klass
+            model_was       = reflection.options[:polymorphic] ? attribute_was(reflection.foreign_type).try(:constantize) : reflection.klass
             foreign_key     = attribute(reflection.foreign_key)
             foreign_key_was = attribute_was(reflection.foreign_key)
 
