@@ -19,7 +19,7 @@ module ActiveTools
             outer_values = {}
             where_values = {}
             path.each do |assoc_name, remote_attributes|
-              reflection = reflections[assoc_name]
+              reflection = reflections.with_indifferent_access[assoc_name]
               target = instance.try(reflection.name)
               outer_values[reflection.name] = {}
               Array(remote_attributes).each do |remote_attribute|
@@ -48,7 +48,7 @@ module ActiveTools
         def adaptive_belongs_to(*args)
           options = args.extract_options!
           assoc_name = args.first
-          unless reflection = reflections[assoc_name]
+          unless reflection = reflections.with_indifferent_access[assoc_name]
             raise(ArgumentError, ":#{assoc_name} method doesn't look like an association accessor!")
           end
           adapter_name = "#{assoc_name}_adaptive"
