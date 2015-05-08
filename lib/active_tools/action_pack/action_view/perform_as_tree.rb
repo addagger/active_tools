@@ -21,7 +21,7 @@ module ActiveTools
       id_key = options[:id]||nil
       scope = case scope
       when ::ActiveRecord::Relation then
-        parent_key = scope.klass.reflections[children_method].foreign_key
+        parent_key = scope.klass.reflections[children_method.to_s].foreign_key
         scope.where(parent_key => id_key)
       when ::Array, ::Set then
         scope.select {|item| item.send(parent_method) == id_key}
