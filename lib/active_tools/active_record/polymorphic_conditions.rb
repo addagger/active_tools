@@ -23,7 +23,7 @@ module ActiveTools
             end
             joins_clause =
             Array.wrap(find_options[:join]).collect do |association|
-              reflection = resource_class.reflections[association]            
+              reflection = resource_class.reflections[association.to_s]            
               if reflection.macro == :belongs_to && reflection.options[:polymorphic] != true
                 "INNER JOIN #{reflection.klass.table_name} ON #{reflection.active_record.table_name}.#{reflection.foreign_key} = #{reflection.klass.table_name}.id"
               elsif reflection.macro.in?([:has_many, :has_one]) && reflection.options[:as].nil?

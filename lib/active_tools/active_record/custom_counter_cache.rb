@@ -21,7 +21,7 @@ module ActiveTools
             else
               assoc_mapping = value
             end
-            reflection = reflections[assoc_name.to_sym]
+            reflection = reflections[assoc_name.to_s]
           
             unless method_defined? :custom_counter_cache_after_create
               include ActiveRecord::CustomCounterCache::InstanceMethods
