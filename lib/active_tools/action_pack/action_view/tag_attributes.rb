@@ -30,7 +30,7 @@ module ActiveTools
           end
 
           def hash
-            @hash.symbolize_keys
+            Hash[@hash.map {|k,v| [k.to_sym, v]}]
           end
 
           private
