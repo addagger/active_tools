@@ -6,11 +6,12 @@ module ActiveTools
   end
   
   module OnLoadActionController
-    def _render_template(options)
+    def _render_template(*args)
+      rendering = super
       if lookup_context.rendered_format == :js
-         super + uniq_content_storage.render_content(Misc::DEFAULT_JS_FLOW_KEY)
+        rendering + uniq_content_storage.render_content(Misc::DEFAULT_JS_FLOW_KEY)
       else
-        super
+        rendering
       end
     end
   end
