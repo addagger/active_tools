@@ -69,7 +69,7 @@ module ActiveTools
           attributes(target, *@remote_attributes)
         end
 
-        def try_update
+        def try_update          
           if updateable_backup?
             begin
               @backup.update(template_attributes)
@@ -84,8 +84,8 @@ module ActiveTools
           end
         end
 
-        def try_commit_existed
-          if @template.present? && @uniq_by.any? && (existed = detect_existed)
+        def try_commit_existed          
+          if @template.present? && @uniq_by.any? && (existed = detect_existed)            
             self.target = existed
             if updateable_backup?
               @backup.mark_for_destruction

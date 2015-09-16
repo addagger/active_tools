@@ -63,11 +63,8 @@ module ActiveTools
           self.adaptive_options[assoc_name.to_sym] = options.merge(:remote_attributes => attr_map.keys)
           
           class_eval <<-EOV
-            before_validation do
+            after_validation do
               #{adapter_name}.try_nullify
-            end
-          
-            #{Rails.version >= "4.1.0" ? "before_validation" : "before_save"} do
               #{adapter_name}.try_commit
             end
 
