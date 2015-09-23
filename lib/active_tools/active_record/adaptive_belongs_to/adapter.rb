@@ -71,6 +71,7 @@ module ActiveTools
 
         def try_update
           if updateable_backup?
+            warn "Adaptive updating: <#{@backup.class.name}: #{@backup.class.primary_key}: #{@backup.send(@backup.class.primary_key)}>"
             begin
               @backup.update(template_attributes)
             rescue ::ActiveRecord::StaleObjectError
@@ -80,12 +81,14 @@ module ActiveTools
               @backup.reload
               try_update
             end
-            self.target = @backup
+            restore_backup!
+            true
           end
         end
 
-        def try_commit_existed
+        def try_commit_existed          
           if @template.present? && @uniq_by.any? && (existed = detect_existed)
+            warn "Adaptive fetching existed <#{existed.class.name}: #{existed.class.primary_key}: #{existed.send(existed.class.primary_key)}>"
             self.target = existed
             if updateable_backup?
               @backup.mark_for_destruction
@@ -94,8 +97,9 @@ module ActiveTools
           end 
         end
 
-        def try_destroy_backup
+        def try_destroy_backup          
           if destroyable_backup?
+            warn "Adaptive destroying backed up: <#{@backup.class.name}: #{@backup.class.primary_key}: #{@backup.send(@backup.class.primary_key)}>"
             begin
               @backup.destroy
             rescue ::ActiveRecord::StaleObjectError
@@ -108,8 +112,9 @@ module ActiveTools
           end
         end
 
-        def try_destroy_target
+        def try_destroy_target          
           if destroyable_target?
+            warn "Adaptive destroying target: <#{target.class.name}: #{target.class.primary_key}: #{target.send(target.class.primary_key)}>"            
             begin
               target.destroy
             rescue ::ActiveRecord::StaleObjectError
