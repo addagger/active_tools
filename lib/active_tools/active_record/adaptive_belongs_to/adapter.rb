@@ -144,7 +144,7 @@ module ActiveTools
               outer_values.deep_merge!(values[:outer_values])
               where_values.deep_merge!(values[:where_values])
             else
-              where_values[attribute] = @template.send(attribute)
+              where_values[attribute] = @template[attribute] #@template.send(attribute)
             end
           end
           klass.includes(outer_values).where(where_values).limit(1).first
