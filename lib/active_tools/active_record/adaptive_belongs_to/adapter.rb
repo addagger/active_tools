@@ -4,7 +4,7 @@ module ActiveTools
       class Adapter
         attr_reader :owner, :assoc_name, :options
 
-        delegate :target, :target_id, :reflection, :to => :association
+        delegate :target, :reflection, :to => :association
 
         def initialize(owner, assoc_name, options = {})
           @owner = owner
@@ -39,7 +39,7 @@ module ActiveTools
             store_backup!
             create_template!
             target.send("#{name}=", value)
-            if same_as_backup?
+            if @backup.present? && same_records?(@backup, target, :attributes => @remote_attributes)
               restore_backup!
             end
           end
@@ -87,7 +87,7 @@ module ActiveTools
         end
 
         def try_commit_existed          
-          if @template.present? && @uniq_by.any? && (existed = detect_existed)
+          if @template.present? && @uniq_by.any? && (existed = detect_existed) && !(@backup.present? && same_records?(@backup, existed, :attributes => @uniq_by))
             warn "Adaptive fetching existed <#{existed.class.name}: #{existed.class.primary_key}: #{existed.send(existed.class.primary_key)}>"
             self.target = existed
             if updateable_backup?
@@ -133,6 +133,10 @@ module ActiveTools
         end
 
         private
+        
+        def target_id
+          association.send(:target_id)
+        end
 
         def detect_existed
           outer_values = {}
@@ -198,9 +202,17 @@ module ActiveTools
             @backup ||= target
           end
         end
-
-        def same_as_backup?
-          @backup.present? && eval(@remote_attributes.map {|a| "@backup.send(:#{a}) == target.send(:#{a})"}.join(" && "))
+        
+        def same_records?(*args)
+          options = args.extract_options!
+          attributes = options[:attributes]
+          result = true
+          prev_object = args.shift
+          args.each do |object|
+            result = result && eval(attributes.map {|a| "object.send(:#{a}) == prev_object.send(:#{a})"}.join(" && "))
+            prev_object = object
+          end
+          result
         end
 
         def valid_attribute?(name)
