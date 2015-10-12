@@ -63,7 +63,7 @@ module ActiveTools
           self.adaptive_options[assoc_name.to_sym] = options.merge(:remote_attributes => attr_map.keys)
           
           class_eval <<-EOV
-            after_validation do
+            before_validation do
               #{adapter_name}.try_nullify
               #{adapter_name}.try_commit
             end

@@ -15,9 +15,11 @@ module ActiveTools
           cattr_accessor :with_permalink_options unless defined?(with_permalink_options)
           self.with_permalink_options ||= {}
           self.with_permalink_options[column_name] = options
-
+          
+          uniqueness_options = options[:scope] ? {:scope => Array(options[:scope])} : {}
+          
           validates_presence_of column_name
-          validates_uniqueness_of column_name, options[:scope] ? {:scope => Array(options[:scope])} : {}
+          validates_uniqueness_of column_name, uniqueness_options
 
           before_validation do
             self.with_permalink_options.each do |column_name, options|
