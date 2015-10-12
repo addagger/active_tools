@@ -55,7 +55,7 @@ module ActiveTools
           
           raise(TypeError, "Option :attributes must be a Hash. #{options[:attributes].class} passed!") unless options[:attributes].is_a?(Hash)
           attr_map = HashWithIndifferentAccess.new(options.delete(:attributes))
-          valid_options = HashWithIndifferentAccess.new(options.delete(:valid_with))
+          valid_options = Hash(options.delete(:valid_with)).symbolize_keys
           valid_with assoc_name, valid_options.merge(:attributes => attr_map) #, :fit => true
         
           class_attribute :adaptive_options unless defined?(adaptive_options)
