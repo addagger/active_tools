@@ -42,8 +42,12 @@ module ActiveTools
 
     def script_for(identifier, *args, &block)
       options = args.extract_options!
-      content_for(identifier) do
-        script(args, options.merge(:volume => identifier), &block)
+      if block_given?
+        content_for(identifier) do
+          script(args, options.merge(:volume => identifier), &block)
+        end
+      else
+        content_for(identifier, (script(args, options.merge(:volume => identifier)).join("\n") << "\n").html_safe)
       end
     end
   end
