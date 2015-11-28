@@ -47,7 +47,7 @@ module ActiveTools
           script(args, options.merge(:volume => identifier), &block)
         end
       else
-        content_for(identifier, (script(args, options.merge(:volume => identifier)).join("\n") << "\n").html_safe)
+        content_for(identifier, script(args, options.merge(:volume => identifier)).join("\n").html_safe)
       end
     end
   end
