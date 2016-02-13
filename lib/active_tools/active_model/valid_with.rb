@@ -10,7 +10,7 @@ module ActiveTools
           object_name = args.first
           passed_attr_map = options.delete(:attributes)||{}
           prefix = options.delete(:prefix)
-          fit = options.delete(:fix)||false
+          fit = options.delete(:fit)||false
           attr_map_name = :"_valid_with_#{object_name}"
           unless respond_to?(attr_map_name)
             class_attribute attr_map_name 
