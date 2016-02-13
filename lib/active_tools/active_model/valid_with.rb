@@ -10,6 +10,7 @@ module ActiveTools
           object_name = args.first
           passed_attr_map = options.delete(:attributes)||{}
           prefix = options.delete(:prefix)
+          fit = options.delete(:fix)||false
           attr_map_name = :"_valid_with_#{object_name}"
           unless respond_to?(attr_map_name)
             class_attribute attr_map_name 
@@ -20,7 +21,7 @@ module ActiveTools
 
           validate(*[options]) do
             if object = send(object_name)
-              if options[:fit] == true
+              if fit
                 object.instance_variable_set(:@errors, ActiveTools::ActiveModel::ValidWith::FakeErrors.new(object))
               end
               if !object.valid?
