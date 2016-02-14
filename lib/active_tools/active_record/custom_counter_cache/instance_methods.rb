@@ -3,7 +3,7 @@ module ActiveTools
     module CustomCounterCache
       module InstanceMethods
         def custom_counter_cache_after_create(assoc_name, reflection, assoc_mapping)
-          if record = send(assoc_name)
+          if record = try(assoc_name)
             ActiveRecord::CustomCounterCache.digger(self, record, assoc_mapping) do |parent, cache_column, value|
               parent.class.update_counters(parent.id, cache_column => value)
             end
@@ -13,7 +13,7 @@ module ActiveTools
 
         def custom_counter_cache_before_destroy(assoc_name, reflection, assoc_mapping)
           unless destroyed_by_association && (destroyed_by_association.foreign_key.to_sym == reflection.foreign_key.to_sym)
-            if (record = send(assoc_name)) && !self.destroyed?
+            if (record = try(assoc_name)) && !self.destroyed?
               ActiveRecord::CustomCounterCache.digger(self, record, assoc_mapping) do |parent, cache_column, value|
                 parent.class.update_counters(parent.id, cache_column => -value)
               end

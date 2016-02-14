@@ -15,7 +15,7 @@ module ActiveTools
                 end
               end
             else
-              response = try(:send, method)
+              response = try(method)
               yield self, method, response, value
               if value.is_a?(Hash) && !response.nil?
                 response.method_digger(value, &block)
@@ -27,7 +27,7 @@ module ActiveTools
         def cycle_call(method, &block)
           object = self
           export = []
-          while object = object.try(:send, method)
+          while object = object.try(method)
             yield object if block_given?
             export << object
           end
