@@ -21,23 +21,23 @@ module ActiveTools
             else
               assoc_mapping = value
             end
-            reflection = reflections[assoc_name.to_s]
+            if (reflection = reflections[assoc_name.to_s])          
+              unless method_defined? :custom_counter_cache_after_create
+                include ActiveRecord::CustomCounterCache::InstanceMethods
+              end
           
-            unless method_defined? :custom_counter_cache_after_create
-              include ActiveRecord::CustomCounterCache::InstanceMethods
+              after_create lambda { |record|
+                record.custom_counter_cache_after_create(assoc_name, reflection, assoc_mapping)
+              }
+
+              before_destroy lambda { |record|
+                record.custom_counter_cache_before_destroy(assoc_name, reflection, assoc_mapping)
+              }
+
+              after_update lambda { |record|
+                record.custom_counter_cache_after_update(assoc_name, reflection, assoc_mapping)
+              }
             end
-          
-            after_create lambda { |record|
-              record.custom_counter_cache_after_create(assoc_name, reflection, assoc_mapping)
-            }
-
-            before_destroy lambda { |record|
-              record.custom_counter_cache_before_destroy(assoc_name, reflection, assoc_mapping)
-            }
-
-            after_update lambda { |record|
-              record.custom_counter_cache_after_update(assoc_name, reflection, assoc_mapping)
-            }
           end
         end
       end
