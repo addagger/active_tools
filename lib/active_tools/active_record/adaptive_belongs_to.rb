@@ -60,7 +60,7 @@ module ActiveTools
         
           class_attribute :adaptive_options unless defined?(adaptive_options)
           self.adaptive_options ||= {}
-          self.adaptive_options[assoc_name.to_sym] = options.merge(:remote_attributes => attr_map.keys)
+          self.adaptive_options[assoc_name.to_sym] = options.merge(:attr_map => attr_map)
           
           class_eval <<-EOV
             before_validation do

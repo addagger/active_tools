@@ -11,7 +11,7 @@ module ActiveTools
           @assoc_name = assoc_name
           @options = options.with_indifferent_access
           @foreign_key = reflection.foreign_key
-          @remote_attributes = @options[:remote_attributes]
+          @remote_attributes = @options[:attr_map].keys
           @init_proc = @options[:init_proc]
           @nullify_if = @options[:nullify_if]
           @update_if = @options[:update_if]
