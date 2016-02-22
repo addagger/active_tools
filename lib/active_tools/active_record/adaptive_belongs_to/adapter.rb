@@ -36,9 +36,11 @@ module ActiveTools
         def write(name, value)
           valid_attribute?(name)
           if value != read(name)
+            owner.send(:attribute_will_change!, name)
             store_backup!
             create_template!
             target.send("#{name}=", value)
+            owner.send(:clear_attribute_changes, name) if owner.changes[name].try(:last) == owner.changes[name].try(:first)
             if @backup.present? && same_records?(@backup, target, :attributes => @remote_attributes)
               restore_backup!
             end
