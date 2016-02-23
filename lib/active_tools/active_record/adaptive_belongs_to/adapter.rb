@@ -11,7 +11,8 @@ module ActiveTools
           @assoc_name = assoc_name
           @options = options.with_indifferent_access
           @foreign_key = reflection.foreign_key
-          @remote_attributes = @options[:attr_map].keys
+          @attr_map = @options[:attr_map]
+          @remote_attributes = @attr_map.keys
           @init_proc = @options[:init_proc]
           @nullify_if = @options[:nullify_if]
           @update_if = @options[:update_if]
@@ -35,12 +36,13 @@ module ActiveTools
 
         def write(name, value)
           valid_attribute?(name)
+          local_attribute = @attr_map[name]
           if value != read(name)
-            owner.send(:attribute_will_change!, name)
+            owner.send(:attribute_will_change!, local_attribute)
             store_backup!
             create_template!
             target.send("#{name}=", value)
-            owner.send(:clear_attribute_changes, name) if owner.changes[name].try(:last) == owner.changes[name].try(:first)
+            owner.send(:clear_attribute_changes, local_attribute) if owner.changes[local_attribute].try(:last) == owner.changes[local_attribute].try(:first)
             if @backup.present? && same_records?(@backup, target, :attributes => @remote_attributes)
               restore_backup!
             end
