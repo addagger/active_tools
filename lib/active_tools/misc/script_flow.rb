@@ -6,17 +6,21 @@ module ActiveTools
   end
   
   module OnLoadActionController
-    def _render_template(*args)
-      rendering = super
-      if lookup_context.rendered_format == :js
-        rendering + uniq_content_storage.render_content(Misc::DEFAULT_JS_FLOW_KEY)
-      else
-        rendering
-      end
-    end
+    # def _render_template(*args)
+    #   rendering = super
+    #   if lookup_context.rendered_format == :js
+    #     rendering + uniq_content_storage.render_content(Misc::DEFAULT_JS_FLOW_KEY)
+    #   else
+    #     rendering
+    #   end
+    # end
   end
   
   module OnLoadActionView
+    def script_flow!
+      uniq_content_storage.render_content(Misc::DEFAULT_JS_FLOW_KEY)
+    end
+    
     def script(*args, &block)
       options = args.extract_options!
       content = args.first
