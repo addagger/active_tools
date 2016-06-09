@@ -14,7 +14,7 @@ module ActiveTools
       end
 
       def uniq_id
-        Base64.urlsafe_encode64(Time.now.send(:_dump))
+        Base64.urlsafe_encode64(Time.now.send(:_dump))[0..-2]
       end
       
     end
