@@ -53,6 +53,7 @@ module ActiveTools
           if nullify_target?    
             store_backup!
             self.target = nil
+            true
           end
         end
 
@@ -159,7 +160,7 @@ module ActiveTools
         end
 
         def nullify_target?
-          target.present? && @nullify_if.try(:call, target, owner)
+          target.present? && @nullify_if.try(:call, (target.persisted? ? target.reload : target), owner)
         end
 
         def updateable_backup?

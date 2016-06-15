@@ -64,8 +64,7 @@ module ActiveTools
           
           class_eval <<-EOV
             before_validation do
-              #{adapter_name}.try_nullify
-              #{adapter_name}.try_commit
+              #{adapter_name}.try_nullify||#{adapter_name}.try_commit
             end
 
             after_save do
