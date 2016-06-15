@@ -50,7 +50,7 @@ module ActiveTools
         end
         
         def try_nullify
-          if nullify?    
+          if nullify_target?    
             store_backup!
             self.target = nil
           end
@@ -158,8 +158,8 @@ module ActiveTools
           klass.includes(outer_values).where(where_values).limit(1).first
         end
 
-        def nullify?
-          target.present? && @nullify_if.try(:call, (target.persisted? ? target.reload : target), owner)
+        def nullify_target?
+          target.present? && @nullify_if.try(:call, target, owner)
         end
 
         def updateable_backup?
