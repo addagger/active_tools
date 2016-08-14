@@ -4,12 +4,12 @@ module ActiveTools
   module ActiveRecord
     module AdaptiveBelongsTo
       extend ::ActiveSupport::Concern
-      
+
       included do
       end
 
       module ClassMethods
-  
+
         def relation_options_under(*args)
           path = args.extract_options!
           local_attribute = args.first
@@ -36,15 +36,15 @@ module ActiveTools
             end
             {:outer_values => outer_values, :where_values => where_values}
           end
-          
+
           class_eval do
             define_method local_method do
               self.class.send(local_method, self)
             end
           end
-          
+
         end
-        
+
         def adaptive_belongs_to(*args)
           options = args.extract_options!
           assoc_name = args.first
@@ -52,19 +52,24 @@ module ActiveTools
             raise(ArgumentError, ":#{assoc_name} method doesn't look like an association accessor!")
           end
           adapter_name = "#{assoc_name}_adaptive"
-          
+
           raise(TypeError, "Option :attributes must be a Hash. #{options[:attributes].class} passed!") unless options[:attributes].is_a?(Hash)
           attr_map = HashWithIndifferentAccess.new(options.delete(:attributes))
           valid_options = Hash(options.delete(:valid_with)).symbolize_keys
           valid_with assoc_name, valid_options.merge(:attributes => attr_map) #, :fit => true
-        
+
           class_attribute :adaptive_options unless defined?(adaptive_options)
           self.adaptive_options ||= {}
           self.adaptive_options[assoc_name.to_sym] = options.merge(:attr_map => attr_map)
-          
+
           class_eval <<-EOV
             before_validation do
               #{adapter_name}.try_nullify||#{adapter_name}.try_commit
+              #{adapter_name}.target_process_do
+            end
+
+            before_save do
+              #{adapter_name}.update_target_if_changed!
             end
 
             after_save do
@@ -75,7 +80,7 @@ module ActiveTools
             after_destroy do
               #{adapter_name}.try_destroy
             end
-          
+
             def #{adapter_name}
               @#{adapter_name} ||= ActiveTools::ActiveRecord::AdaptiveBelongsTo::Adapter.new(self, :#{assoc_name}, adaptive_options[:#{assoc_name}])
             end
@@ -92,10 +97,10 @@ module ActiveTools
               end
             end
           end
-          
+
         end
       end
-      
+
       # def reload(*args)
       #   super.tap do |record|
       #     adaptive_options.keys.each do |assoc_name|
@@ -105,12 +110,12 @@ module ActiveTools
       #     end
       #   end
       # end
-      
+
     end
   end
-  
+
   module OnLoadActiveRecord
     include ActiveRecord::AdaptiveBelongsTo
   end
-  
+
 end

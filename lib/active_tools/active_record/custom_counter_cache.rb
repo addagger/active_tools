@@ -11,6 +11,11 @@ module ActiveTools
       module ClassMethods
         def custom_counter_cache_for(*args)
           mapping = args.extract_options!
+          
+          class_attribute :custom_counter_cache_options unless defined?(custom_counter_cache_options)
+          self.custom_counter_cache_options ||= {}
+          self.custom_counter_cache_options[:mapping] = mapping.with_indifferent_access
+          
           mapping.each do |assoc_name, value|
             assoc_name = assoc_name.to_s
             if assoc_name.last == "*"

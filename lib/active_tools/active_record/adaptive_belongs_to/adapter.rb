@@ -18,13 +18,14 @@ module ActiveTools
           @update_if = @options[:update_if]
           @destroy_if = @options[:destroy_if]
           @uniq_by = Array(@options[:uniq_by]).map(&:to_s)
+          @target_process = @options[:target_process]
           association.load_target
         end
-        
+
         def klass
           association.klass||reflection.class_name.constantize
         end
-        
+
         def association
           owner.association(assoc_name)
         end
@@ -48,9 +49,9 @@ module ActiveTools
             end
           end
         end
-        
+
         def try_nullify
-          if nullify_target?    
+          if nullify_target?
             store_backup!
             self.target = nil
             true
@@ -58,10 +59,10 @@ module ActiveTools
         end
 
         def try_commit
-          try_commit_existed || try_update
+          try_commit_existed || try_restore_refreshed_backup
         end
 
-        def try_destroy          
+        def try_destroy
           try_destroy_backup
           try_destroy_target
         end
@@ -69,29 +70,25 @@ module ActiveTools
         def template_attributes
           attributes(@template, *@remote_attributes)
         end
-        
+
         def target_attributes
           attributes(target, *@remote_attributes)
         end
 
-        def try_update
+        def try_restore_refreshed_backup
           if updateable_backup?
-            warn "Adaptive updating: <#{@backup.class.name}: #{@backup.class.primary_key}: #{@backup.send(@backup.class.primary_key)}>"
-            begin
-              @backup.update(template_attributes)
-            rescue ::ActiveRecord::StaleObjectError
-              @backup.reload
-              try_update
-            rescue ::ActiveRecord::StatementInvalid
-              @backup.reload
-              try_update
+            warn "Adaptive going to update: <#{@backup.class.name}: #{@backup.class.primary_key}: #{@backup.send(@backup.class.primary_key)}>"
+            @backup.attributes = template_attributes
+            if @backup.valid?
+              restore_backup!
+              true
+            else
+              false
             end
-            restore_backup!
-            true
           end
         end
 
-        def try_commit_existed          
+        def try_commit_existed
           if @template.present? && @uniq_by.any? && (existed = detect_existed) && !(@backup.present? && same_records?(@backup, existed, :attributes => @uniq_by))
             warn "Adaptive fetching existed <#{existed.class.name}: #{existed.class.primary_key}: #{existed.send(existed.class.primary_key)}>"
             self.target = existed
@@ -99,10 +96,10 @@ module ActiveTools
               @backup.mark_for_destruction
             end
             true
-          end 
+          end
         end
 
-        def try_destroy_backup          
+        def try_destroy_backup
           if destroyable_backup?
             warn "Adaptive destroying backed up: <#{@backup.class.name}: #{@backup.class.primary_key}: #{@backup.send(@backup.class.primary_key)}>"
             begin
@@ -117,9 +114,9 @@ module ActiveTools
           end
         end
 
-        def try_destroy_target          
+        def try_destroy_target
           if destroyable_target?
-            warn "Adaptive destroying target: <#{target.class.name}: #{target.class.primary_key}: #{target.send(target.class.primary_key)}>"            
+            warn "Adaptive destroying target: <#{target.class.name}: #{target.class.primary_key}: #{target.send(target.class.primary_key)}>"
             begin
               target.destroy
             rescue ::ActiveRecord::StaleObjectError
@@ -131,6 +128,25 @@ module ActiveTools
             end
           end
         end
+        
+        def target_process_do
+          @target_process.try(:call, target, owner)
+        end
+
+        def update_target_if_changed!
+          if target.changes.any?
+            warn "Adaptive updating: <#{target.class.name}: #{target.class.primary_key}: #{target.send(target.class.primary_key)}>"
+            begin
+              target.save
+            rescue ::ActiveRecord::StaleObjectError
+              target.reload
+              update_target_if_changed!
+            rescue ::ActiveRecord::StatementInvalid
+              target.reload
+              update_target_if_changed!
+            end
+          end
+        end
 
         def clear!
           @template = nil
@@ -138,7 +154,7 @@ module ActiveTools
         end
 
         private
-        
+
         def target_id
           association.send(:target_id)
         end
@@ -174,7 +190,7 @@ module ActiveTools
         def destroyable_target?
           target.try(:persisted?) && (!target.destroyed?||target.marked_for_destruction?) && @destroy_if.try(:call, target.reload, owner)
         end
-        
+
         def attributes(object, *attrs)
           array = attrs.map do |a|
             begin
@@ -187,7 +203,7 @@ module ActiveTools
         end
 
         def create_template!
-          if target.nil? || @template.nil? 
+          if target.nil? || @template.nil?
             self.target = template
           end
         end
@@ -201,13 +217,13 @@ module ActiveTools
             @backup = nil
           end
         end
-        
+
         def store_backup!
           if target.try(:persisted?)
             @backup ||= target
           end
         end
-        
+
         def same_records?(*args)
           options = args.extract_options!
           attributes = options[:attributes]
@@ -255,10 +271,10 @@ module ActiveTools
           @template.tap do |t|
             @init_proc.try(:call, t, owner)
           end
-        end 
+        end
       end
 
     end
   end
-  
+
 end
