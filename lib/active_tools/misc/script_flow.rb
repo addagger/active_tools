@@ -30,10 +30,10 @@ module ActiveTools
         end
         if content
           case request.format
-          when Mime::JS then
+          when Mime[:js] then
             uniq_content_storage.append_content(content, Misc::DEFAULT_JS_FLOW_KEY)
             nil
-          when Mime::HTML then
+          when Mime[:html] then
             volume = options.delete(:volume)
             unless uniq_content_storage.remembered?(content, volume)
               flow = uniq_content_storage.remember(content, volume)

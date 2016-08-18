@@ -48,7 +48,9 @@ module ActiveTools
   
   module OnLoadActionController
     included do
-      helper_method :uniq_content_storage
+      if respond_to?(:helper_method)
+        helper_method :uniq_content_storage
+      end
     end
 
     def uniq_content_storage

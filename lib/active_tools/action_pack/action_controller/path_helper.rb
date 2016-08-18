@@ -8,8 +8,10 @@ module ActiveTools
         extend ::ActiveSupport::Concern
         
         included do
-          include ComplexHelpers
-          helper_method :path?, :action?, :controller?, :current_action, :current_controller, :http_referer
+          if respond_to?(:helper_method)
+            include ComplexHelpers
+            helper_method :path?, :action?, :controller?, :current_action, :current_controller, :http_referer
+          end
         end
         
         def current_action

@@ -43,11 +43,12 @@ module ActiveTools
             store_backup!
             create_template!
             target.send("#{name}=", value)
-            owner.send(:clear_attribute_changes, local_attribute) if owner.changes[local_attribute].try(:last) == owner.changes[local_attribute].try(:first)
+            owner.send(:attributes_changed_by_setter).except!(local_attribute) if owner.changes[local_attribute].try(:last) == owner.changes[local_attribute].try(:first)
             if @backup.present? && same_records?(@backup, target, :attributes => @remote_attributes)
               restore_backup!
             end
           end
+          value
         end
 
         def try_nullify
@@ -77,20 +78,16 @@ module ActiveTools
 
         def try_restore_refreshed_backup
           if updateable_backup?
-            warn "Adaptive going to update: <#{@backup.class.name}: #{@backup.class.primary_key}: #{@backup.send(@backup.class.primary_key)}>"
+            warn "Adaptive is going to update: <#{@backup.class.name}: #{@backup.class.primary_key}: #{@backup.send(@backup.class.primary_key)}>"
             @backup.attributes = template_attributes
-            if @backup.valid?
-              restore_backup!
-              true
-            else
-              false
-            end
+            restore_backup!
+            true
           end
         end
 
         def try_commit_existed
           if @template.present? && @uniq_by.any? && (existed = detect_existed) && !(@backup.present? && same_records?(@backup, existed, :attributes => @uniq_by))
-            warn "Adaptive fetching existed <#{existed.class.name}: #{existed.class.primary_key}: #{existed.send(existed.class.primary_key)}>"
+            warn "Adaptive is fetching existed <#{existed.class.name}: #{existed.class.primary_key}: #{existed.send(existed.class.primary_key)}>"
             self.target = existed
             if updateable_backup?
               @backup.mark_for_destruction
@@ -101,7 +98,7 @@ module ActiveTools
 
         def try_destroy_backup
           if destroyable_backup?
-            warn "Adaptive destroying backed up: <#{@backup.class.name}: #{@backup.class.primary_key}: #{@backup.send(@backup.class.primary_key)}>"
+            warn "Adaptive is destroying backed up: <#{@backup.class.name}: #{@backup.class.primary_key}: #{@backup.send(@backup.class.primary_key)}>"
             begin
               @backup.destroy
             rescue ::ActiveRecord::StaleObjectError
@@ -116,7 +113,7 @@ module ActiveTools
 
         def try_destroy_target
           if destroyable_target?
-            warn "Adaptive destroying target: <#{target.class.name}: #{target.class.primary_key}: #{target.send(target.class.primary_key)}>"
+            warn "Adaptive is destroying target: <#{target.class.name}: #{target.class.primary_key}: #{target.send(target.class.primary_key)}>"
             begin
               target.destroy
             rescue ::ActiveRecord::StaleObjectError
@@ -134,15 +131,13 @@ module ActiveTools
         end
 
         def update_target_if_changed!
-          if target.changes.any?
-            warn "Adaptive updating: <#{target.class.name}: #{target.class.primary_key}: #{target.send(target.class.primary_key)}>"
+          if target && target.changes.any?
+            warn "Adaptive is updating: <#{target.class.name}: #{target.class.primary_key}: #{target.send(target.class.primary_key)}>"
             begin
               target.save
             rescue ::ActiveRecord::StaleObjectError
-              target.reload
               update_target_if_changed!
             rescue ::ActiveRecord::StatementInvalid
-              target.reload
               update_target_if_changed!
             end
           end
@@ -169,26 +164,26 @@ module ActiveTools
               outer_values.deep_merge!(values[:outer_values])
               where_values.deep_merge!(values[:where_values])
             else
-              where_values[attribute] = @template[attribute] #@template.send(attribute)
+              where_values[attribute] = @template[attribute]
             end
           end
           klass.includes(outer_values).where(where_values).limit(1).first
         end
 
         def nullify_target?
-          target.present? && @nullify_if.try(:call, (target.persisted? ? target.reload : target), owner)
+          target.present? && @nullify_if.try(:call, target, owner) # .reload is NOT acceptable (flushes changes)
         end
 
         def updateable_backup?
-          @backup.try(:persisted?) && @update_if.try(:call, @backup.reload, owner)
+          @backup.try(:persisted?) && @update_if.try(:call, @backup.reload, owner) # .reload is acceptable
         end
 
         def destroyable_backup?
-          @backup.try(:persisted?) && (!@backup.destroyed?||@backup.marked_for_destruction?) && @destroy_if.try(:call, @backup.reload, owner)
+          @backup.try(:persisted?) && (!@backup.destroyed?||@backup.marked_for_destruction?) && @destroy_if.try(:call, @backup.reload, owner) # .reload is acceptable
         end
 
         def destroyable_target?
-          target.try(:persisted?) && (!target.destroyed?||target.marked_for_destruction?) && @destroy_if.try(:call, target.reload, owner)
+          target.try(:persisted?) && (!target.destroyed?||target.marked_for_destruction?) && @destroy_if.try(:call, target.reload, owner) # .reload is acceptable
         end
 
         def attributes(object, *attrs)
@@ -215,6 +210,7 @@ module ActiveTools
             end
             self.target = @backup
             @backup = nil
+            true
           end
         end
 
