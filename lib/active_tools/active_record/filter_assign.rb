@@ -11,10 +11,9 @@ module ActiveTools
           options = args.extract_options!
           args.each do |attribute|
             define_method "#{attribute}=" do |value|
-              if (options[:if].nil? || (options[:if].is_a?(Proc) && options[:if].call(value) == true)) && (options[:unless].nil? || (options[:unless].is_a?(Proc) && options[:unless].call(value) == false))
-                if options.has_key?(:force_value)
-                  super(options[:force_value])
-                end
+              case options[:to]
+              when Proc then
+                super(options[:to].call(value))
               else
                 super(value)
               end
