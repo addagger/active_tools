@@ -20,7 +20,8 @@ module ActiveTools
           
           validates_presence_of column_name
           validates_uniqueness_of column_name, uniqueness_options
-
+          validates_length_of column_name, :maximum => 255
+          
           before_validation do
             self.with_permalink_options.each do |column_name, options|
               eval <<-EOV
