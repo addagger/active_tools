@@ -52,7 +52,7 @@ module ActiveTools
           if response && !response.is_a?(::ActiveRecord::Base)
             count = case value
             when String, Symbol then owner.send(value)
-            when Fixnum then value
+            when Integer then value
             end
             yield object, key, count          
           end
