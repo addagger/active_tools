@@ -19,6 +19,7 @@ module ActiveTools
           @destroy_if = @options[:destroy_if]
           @uniq_by = Array(@options[:uniq_by]).map(&:to_s)
           @target_process = @options[:target_process]
+          @touch = @options[:touch]
           association.load_target
         end
 
@@ -133,6 +134,7 @@ module ActiveTools
         def update_target_if_changed!
           if target && target.changes.any?
             warn "Adaptive is updating: <#{target.class.name}: #{target.class.primary_key}: #{target.send(target.class.primary_key)}>"
+            owner.touch if @touch
             begin
               target.save
             rescue ::ActiveRecord::StaleObjectError
