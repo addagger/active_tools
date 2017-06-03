@@ -87,13 +87,23 @@ module ActiveTools
           EOV
 
           attr_map.each do |remote_attribute, local_attribute|
+            if Rails.version >= "5.0"
+              attribute local_attribute, reflection.klass.attribute_types[remote_attribute].dup
+              after_initialize do
+                self[local_attribute] = send(local_attribute)
+              end
+            end
             relation_options_under(local_attribute, assoc_name => remote_attribute)
             class_eval do
               define_method local_attribute do
                 send(adapter_name).read(remote_attribute)
               end
               define_method "#{local_attribute}=" do |value|
-                send(adapter_name).write(remote_attribute, value)
+                if Rails.version >= "5.0"
+                  super send(adapter_name).write(remote_attribute, value)
+                else
+                  send(adapter_name).write(remote_attribute, value)
+                end
               end
             end
           end
