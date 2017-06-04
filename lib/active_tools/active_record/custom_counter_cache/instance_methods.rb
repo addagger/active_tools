@@ -24,18 +24,18 @@ module ActiveTools
         def custom_counter_cache_after_update(assoc_name, reflection, assoc_mapping)
           record_changed =
           if reflection.polymorphic?
-            send(:attribute_changed?, reflection.foreign_type)||send(:attribute_changed?, reflection.foreign_key)
+            send((Rails.version >= "5.1" ? :saved_change_to_attribute? : :attribute_changed?), reflection.foreign_type)||send((Rails.version >= "5.1" ? :saved_change_to_attribute? : :attribute_changed?), reflection.foreign_key)
           else
-            send(:attribute_changed?, reflection.foreign_key)
+            send((Rails.version >= "5.1" ? :saved_change_to_attribute? : :attribute_changed?), reflection.foreign_key)
           end
           
           if (@_after_create_custom_counter_called ||= false)
             @_after_create_custom_counter_called = false
           elsif !new_record? && record_changed
             model           = reflection.options[:polymorphic] ? attribute(reflection.foreign_type).try(:constantize) : reflection.klass
-            model_was       = reflection.options[:polymorphic] ? attribute_was(reflection.foreign_type).try(:constantize) : reflection.klass
+            model_was       = reflection.options[:polymorphic] ? send((Rails.version >= "5.1" ? :attribute_before_last_save : :attribute_was), reflection.foreign_type).try(:constantize) : reflection.klass
             foreign_key     = attribute(reflection.foreign_key)
-            foreign_key_was = attribute_was(reflection.foreign_key)
+            foreign_key_was = send((Rails.version >= "5.1" ? :attribute_before_last_save : :attribute_was), reflection.foreign_key)
 
             if foreign_key && model.respond_to?(:increment_counter) && to_increment = model.find_by_id(foreign_key)
               ActiveRecord::CustomCounterCache.digger(self, to_increment, assoc_mapping) do |parent, cache_column, value|

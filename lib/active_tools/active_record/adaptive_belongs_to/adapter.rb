@@ -134,7 +134,12 @@ module ActiveTools
         def update_target_if_changed!
           if target && target.changes.any?
             warn "Adaptive is updating: <#{target.class.name}: #{target.class.primary_key}: #{target.send(target.class.primary_key)}>"
-            owner.touch if @touch
+            if @touch
+              begin
+                owner.touch
+              rescue
+              end
+            end
             begin
               target.save
             rescue ::ActiveRecord::StaleObjectError
