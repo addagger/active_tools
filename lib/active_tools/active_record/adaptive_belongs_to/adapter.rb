@@ -245,7 +245,9 @@ module ActiveTools
 
         def target=(record)
           if owner.persisted?
-            if Rails.version >= "4.1.0"
+            if Rails.version >= "5.2.0"
+              association.send(:replace_keys, record)
+            elsif Rails.version >= "4.1.0"
               if record
                 association.send(:replace_keys, record)
               else
