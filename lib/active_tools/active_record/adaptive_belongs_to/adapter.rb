@@ -44,6 +44,7 @@ module ActiveTools
             store_backup!
             create_template!
             target.send("#{name}=", value)
+            @template.send("#{name}=", value)
             owner.send(:attributes_changed_by_setter).except!(local_attribute) if owner.changes[local_attribute].try(:last) == owner.changes[local_attribute].try(:first)
             if @backup.present? && same_records?(@backup, target, :attributes => @remote_attributes)
               restore_backup!
