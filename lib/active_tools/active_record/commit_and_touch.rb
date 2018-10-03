@@ -7,7 +7,7 @@ module ActiveTools
       end
       
       module ClassMethods
-        def commit_and_touch(*args)
+        def commit_and_touch(*args, &block)
           options = args.extract_options!
           
           class_attribute :commit_and_touch_options unless defined?(commit_and_touch_options)
@@ -17,7 +17,12 @@ module ActiveTools
           
           after_commit options do
             self.commit_and_touch_options[:reflections].each do |assoc|
-              send(assoc).update_all(:updated_at => Time.now)
+              attributes = if block_given?
+                block.call(self)
+              else
+                {:updated_at => Time.now}
+              end
+              send(assoc).update_all(attributes)
             end
           end
         end
